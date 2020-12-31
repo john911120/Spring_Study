@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+						http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<!-- (612) spring security Setting  -->					
+	<!-- (618) spring security Authority Setting  -->					
+	<!-- (619) spring security Access Denied Error  -->					
+	<!-- (630) spring security CustomAccessDeniedHandler bean create -->					
+	<!-- (631) spring security Custom Login Page create -->					
+	<!-- (639) spring security AuthenticationSuccessHandler LoginSuccess -->					
+	<!-- (640) spring security LogoutSuccessHandler Logout -->					
+	<!-- (646) spring security Apply dataSource -->					
+	<!-- (649) spring security CustomNoOpPasswordEncoder -->					
+	<!-- (652) spring security BcryptPasswordEncoder -->					
+	<!-- (657) spring security Query Author -->					
+	<!-- (667) spring security CustomUserDetailsService apply -->					
+	<!-- (678) spring security Remember-Me apply -->					
+	<!-- (681) spring security Logout Cookie Delete apply -->					
+	<!-- (711) Apply For Project -->					
+	<bean id="customAccessDenied" class="org.zerock.security.CustomAccessDeniedHandler"></bean>
+<!-- 	<bean id="customLoginSuccess" class="org.zerock.security.CustomLoginSuccessHandler"></bean> -->
+<!-- 	<bean id="customPasswordEncoder" class="org.zerock.security.CustomNoOpPasswordEncoder"></bean> -->
+	<bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"></bean>
+	<bean id="customUserDetailsService" class="org.zerock.security.CustomUserDetailsService"></bean>
+	
+<!-- 	<security:http auto-config="true" use-expressions="true"> -->
+	<security:http>
+		<security:intercept-url pattern="/sample/all" access="permitAll"/>
+	
+		<security:intercept-url pattern="/sample/member" access="hasRole('ROLE_MEMBER')"/>
+		<security:intercept-url pattern="/sample/admin" access="hasRole('ROLE_ADMIN')"/>
+		
+		<!--  (711) 24라인을 주석 처리하고 로그인 후 다시 게시물 작성 페이지 이동 방식으로 수정 -->
+		<security:form-login login-page="/customLogin"/>
+<!-- 		<security:access-denied-handler error-page="/accessError"/> -->
+		<security:access-denied-handler ref="customAccessDenied"/>
+		
+		<!-- (639) -->
+		<security:form-login login-page="/customLogin" authentication-success-handler-ref="customLoginSuccess"/>
+		
+		<!-- (640) -->
+		<security:logout logout-url="/customLogout" invalidate-session="true"/>
+		<!--  (678) Remember-Me -->
+		<security:remember-me data-source-ref="dataSource" token-validity-seconds="604800"/>
+		
+		<!--  (681) Logout Cookie Delete -->
+		<security:logout logout-url="/customLogout" invalidate-session="true" delete-cookies="remember-me,JSESSION_ID"/>
+<!-- 		<security:csrf disabled="true"/> -->
+		
+	</security:http>
+
+		<!-- <security:authentication-manager> <security:authentication-provider> 
+		<security:user-service> <security:user name="member" password="{noop}member" 
+		authorities="ROLE_MEMBER"/> <security:user name="admin" password="{noop}admin" 
+		authorities="ROLE_MEMBER, ROLE_ADMIN"/> </security:user-service> </security:authentication-provider> 
+		</security:authentication-manager> -->
+<!-- 			<security:user-service> -->
+<!-- 				<security:user name="member" password="{noop}member" authorities="ROLE_MEMBER"/> -->
+<!-- 				<security:user name="admin" password="{noop}admin" authorities="ROLE_MEMBER, ROLE_ADMIN"/> -->
+<!-- 			</security:user-service> -->
+
+<!--  Chap32 -->
+<!-- 	<security:authentication-manager> -->
+<!-- 		<security:authentication-provider> -->
+<!-- 	 (646) --> 
+<!--  			<security:jdbc-user-service data-source-ref="dataSource" /> --> 
+<!-- 		 (657) -->	 
+<!-- 			<security:jdbc-user-service data-source-ref="dataSource"  -->
+<!-- 			users-by-username-query="select userid username, userpw password, enabled from tbl_member where userid=?" -->
+<!-- 			authorities-by-username-query="select userid username, auth authority from tbl_member_auth where userid=?"/> -->
+<!-- 		 (649) -->	 
+<!-- 			<security:password-encoder ref="bcryptPasswordEncoder"/> -->
+			
+<!-- 		</security:authentication-provider> -->
+<!-- 	</security:authentication-manager> -->
+		<!-- Chap33 (667)-->
+		<security:authentication-manager>
+			<security:authentication-provider user-service-ref="customUserDetailsService">
+				<security:password-encoder ref="bcryptPasswordEncoder"/>
+			</security:authentication-provider>
+		</security:authentication-manager>
+</beans>
